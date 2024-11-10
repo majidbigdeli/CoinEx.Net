@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using CryptoExchange.Net.Converters;
 using Newtonsoft.Json;
 
 namespace CoinEx.Net.Objects.Models.Socket
@@ -8,18 +7,13 @@ namespace CoinEx.Net.Objects.Models.Socket
     /// <summary>
     /// Order book
     /// </summary>
-    public class CoinExSocketOrderBook
+    public record CoinExSocketOrderBook
     {
         /// <summary>
         /// The price of the last trade. Only filled on a full update.
         /// </summary>
         [JsonProperty("last")]
         public decimal? LastPrice { get; set; }
-
-        /// <summary>
-        /// Whether it is a full update or an update based on the last update
-        /// </summary>
-        public bool FullUpdate { get; set; }
 
         /// <summary>
         /// The timestamp of the data. Only filled on a full update.

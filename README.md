@@ -1,35 +1,274 @@
-# CoinEx.Net
-[![.NET](https://github.com/JKorf/CoinEx.Net/actions/workflows/dotnet.yml/badge.svg)](https://github.com/JKorf/CoinEx.Net/actions/workflows/dotnet.yml) [![Nuget version](https://img.shields.io/nuget/v/CoinEx.net.svg)](https://www.nuget.org/packages/CoinEx.Net)  [![Nuget downloads](https://img.shields.io/nuget/dt/CoinEx.Net.svg)](https://www.nuget.org/packages/CoinEx.Net)
+# ![.CoinEx.Net](https://github.com/JKorf/CoinEx.Net/blob/master/CoinEx.Net/Icon/icon.png?raw=true) CoinEx.Net
 
-CoinEx.Net is a wrapper around the CoinEx API as described on [CoinEx](https://github.com/coinexcom/coinex_exchange_api/wiki), including all features the API provides using clear and readable objects, both for the REST  as the websocket API's.
+[![.NET](https://img.shields.io/github/actions/workflow/status/JKorf/CoinEx.Net/dotnet.yml?style=for-the-badge)](https://github.com/JKorf/CoinEx.Net/actions/workflows/dotnet.yml) ![License](https://img.shields.io/github/license/JKorf/CoinEx.Net?style=for-the-badge)
 
-**If you think something is broken, something is missing or have any questions, please open an [Issue](https://github.com/JKorf/CoinEx.Net/issues)**
+CoinEx.Net is a strongly typed client library for accessing the [CoinEx REST and Websocket API](https://github.com/coinexcom/coinex_exchange_api/wiki).
 
-[Documentation](https://jkorf.github.io/CoinEx.Net/)
+## Features
+* Response data is mapped to descriptive models
+* Input parameters and response values are mapped to discriptive enum values where possible
+* Automatic websocket (re)connection management 
+* Client side order book implementation
+* Extensive logging
+* Support for different environments
+* Easy integration with other exchange client based on the CryptoExchange.Net base library
 
-## Installation
-`dotnet add package CoinEx.Net`
+## Supported Frameworks
+The library is targeting both `.NET Standard 2.0` and `.NET Standard 2.1` for optimal compatibility
+
+|.NET implementation|Version Support|
+|--|--|
+|.NET Core|`2.0` and higher|
+|.NET Framework|`4.6.1` and higher|
+|Mono|`5.4` and higher|
+|Xamarin.iOS|`10.14` and higher|
+|Xamarin.Android|`8.0` and higher|
+|UWP|`10.0.16299` and higher|
+|Unity|`2018.1` and higher|
+
+## Install the library
+
+### NuGet 
+[![NuGet version](https://img.shields.io/nuget/v/CoinEx.net.svg?style=for-the-badge)](https://www.nuget.org/packages/CoinEx.Net)  [![Nuget downloads](https://img.shields.io/nuget/dt/CoinEx.Net.svg?style=for-the-badge)](https://www.nuget.org/packages/CoinEx.Net)
+
+	dotnet add package CoinEx.Net
+	
+### GitHub packages
+CoinEx.Net is available on [GitHub packages](https://github.com/JKorf/CoinEx.Net/pkgs/nuget/CoinEx.Net). You'll need to add `https://nuget.pkg.github.com/JKorf/index.json` as a NuGet package source.
+
+### Download release
+[![GitHub Release](https://img.shields.io/github/v/release/JKorf/CoinEx.Net?style=for-the-badge&label=GitHub)](https://github.com/JKorf/CoinEx.Net/releases)
+
+The NuGet package files are added along side the source with the latest GitHub release which can found [here](https://github.com/JKorf/CoinEx.Net/releases).
+
+## How to use
+*REST Endpoints*  
+
+```csharp
+// Get the ETH/USDT ticker via rest request
+var restClient = new CoinExRestClient();
+var tickerResult = await restClient.SpotApiV2.ExchangeData.GetTickersAsync(new [] { "ETHUSDT" });
+var lastPrice = tickerResult.Data.LastPrice;
+```
+
+*Websocket streams*  
+
+```csharp
+// Subscribe to ETH/USDT ticker updates via the websocket API
+var socketClient = new CoinExSocketClient();
+var tickerSubscriptionResult = socketClient.SpotApiV2.SubscribeToTickerUpdatesAsync(new [] { "ETHUSDT" }, (update) =>
+{
+	var lastPrice = update.Data.First().LastPrice;
+});
+```
+
+For information on the clients, dependency injection, response processing and more see the [CoinEx.Net documentation](https://jkorf.github.io/CoinEx.Net), [CryptoExchange.Net documentation](https://jkorf.github.io/CryptoExchange.Net), or have a look at the examples [here](https://github.com/JKorf/CoinEx.Net/tree/master/Examples) or [here](https://github.com/JKorf/CryptoExchange.Net/tree/master/Examples).
+
+## CryptoExchange.Net
+CoinEx.Net is based on the [CryptoExchange.Net](https://github.com/JKorf/CryptoExchange.Net) base library. Other exchange API implementations based on the CryptoExchange.Net base library are available and follow the same logic.
+
+CryptoExchange.Net also allows for [easy access to different exchange API's](https://jkorf.github.io/CryptoExchange.Net#idocs_shared).
+
+|Exchange|Repository|Nuget|
+|--|--|--|
+|Binance|[JKorf/Binance.Net](https://github.com/JKorf/Binance.Net)|[![Nuget version](https://img.shields.io/nuget/v/Binance.net.svg?style=flat-square)](https://www.nuget.org/packages/Binance.Net)|
+|BingX|[JKorf/BingX.Net](https://github.com/JKorf/BingX.Net)|[![Nuget version](https://img.shields.io/nuget/v/JK.BingX.net.svg?style=flat-square)](https://www.nuget.org/packages/JK.BingX.Net)|
+|Bitfinex|[JKorf/Bitfinex.Net](https://github.com/JKorf/Bitfinex.Net)|[![Nuget version](https://img.shields.io/nuget/v/Bitfinex.net.svg?style=flat-square)](https://www.nuget.org/packages/Bitfinex.Net)|
+|Bitget|[JKorf/Bitget.Net](https://github.com/JKorf/Bitget.Net)|[![Nuget version](https://img.shields.io/nuget/v/JK.Bitget.net.svg?style=flat-square)](https://www.nuget.org/packages/JK.Bitget.Net)|
+|BitMart|[JKorf/BitMart.Net](https://github.com/JKorf/BitMart.Net)|[![Nuget version](https://img.shields.io/nuget/v/BitMart.net.svg?style=flat-square)](https://www.nuget.org/packages/BitMart.Net)|
+|Bybit|[JKorf/Bybit.Net](https://github.com/JKorf/Bybit.Net)|[![Nuget version](https://img.shields.io/nuget/v/Bybit.net.svg?style=flat-square)](https://www.nuget.org/packages/Bybit.Net)|
+|Coinbase|[JKorf/Coinbase.Net](https://github.com/JKorf/Coinbase.Net)|[![Nuget version](https://img.shields.io/nuget/v/JKorf.Coinbase.Net.svg?style=flat-square)](https://www.nuget.org/packages/JKorf.Coinbase.Net)|
+|CoinGecko|[JKorf/CoinGecko.Net](https://github.com/JKorf/CoinGecko.Net)|[![Nuget version](https://img.shields.io/nuget/v/CoinGecko.net.svg?style=flat-square)](https://www.nuget.org/packages/CoinGecko.Net)|
+|Crypto.com|[JKorf/CryptoCom.Net](https://github.com/JKorf/CryptoCom.Net)|[![Nuget version](https://img.shields.io/nuget/v/CryptoCom.net.svg?style=flat-square)](https://www.nuget.org/packages/CryptoCom.Net)|
+|Gate.io|[JKorf/GateIo.Net](https://github.com/JKorf/GateIo.Net)|[![Nuget version](https://img.shields.io/nuget/v/GateIo.net.svg?style=flat-square)](https://www.nuget.org/packages/GateIo.Net)|
+|HTX|[JKorf/HTX.Net](https://github.com/JKorf/HTX.Net)|[![Nuget version](https://img.shields.io/nuget/v/JKorf.HTX.Net.svg?style=flat-square)](https://www.nuget.org/packages/JKorf.HTX.Net)|
+|Kraken|[JKorf/Kraken.Net](https://github.com/JKorf/Kraken.Net)|[![Nuget version](https://img.shields.io/nuget/v/KrakenExchange.net.svg?style=flat-square)](https://www.nuget.org/packages/KrakenExchange.Net)|
+|Kucoin|[JKorf/Kucoin.Net](https://github.com/JKorf/Kucoin.Net)|[![Nuget version](https://img.shields.io/nuget/v/Kucoin.net.svg?style=flat-square)](https://www.nuget.org/packages/Kucoin.Net)|
+|Mexc|[JKorf/Mexc.Net](https://github.com/JKorf/Mexc.Net)|[![Nuget version](https://img.shields.io/nuget/v/JK.Mexc.net.svg?style=flat-square)](https://www.nuget.org/packages/JK.Mexc.Net)|
+|OKX|[JKorf/OKX.Net](https://github.com/JKorf/OKX.Net)|[![Nuget version](https://img.shields.io/nuget/v/JK.OKX.net.svg?style=flat-square)](https://www.nuget.org/packages/JK.OKX.Net)|
+|WhiteBit|[JKorf/WhiteBit.Net](https://github.com/JKorf/WhiteBit.Net)|[![Nuget version](https://img.shields.io/nuget/v/WhiteBit.net.svg?style=flat-square)](https://www.nuget.org/packages/WhiteBit.Net)|
+
+## Discord
+[![Nuget version](https://img.shields.io/discord/847020490588422145?style=for-the-badge)](https://discord.gg/MSpeEtSY8t)  
+A Discord server is available [here](https://discord.gg/MSpeEtSY8t). Feel free to join for discussion and/or questions around the CryptoExchange.Net and implementation libraries.
+
+## Supported functionality
+
+### Spot Api V1
+|API|Supported|Location|
+|--|--:|--|
+|Market Data API|✓|`restClient.SpotApi.ExchangeData`|
+|Account API|✓|`restClient.SpotApi.Account`|
+|Trading API|✓|`restClient.SpotApi.Trading`|
+|Websocket API|✓|`socketClient.SpotApi`|
+
+### Futures Api V1
+|API|Supported|Location|
+|--|--:|--|
+|*|X||
+
+### V2 Account
+|API|Supported|Location|
+|--|--:|--|
+|Sub-Account|X||
+|Fee Rate|✓|`restClient.SpotApiV2.ExchangeData`|
+|Set|✓|`restClient.SpotApiV2.Account`|
+
+### V2 Asset
+|API|Supported|Location|
+|--|--:|--|
+|Balance rest|✓|`restClient.SpotApiV2.Account`|
+|Balance websocket|✓|`socketClient.SpotApiV2`|
+|Loan & Repayment|✓|`restClient.SpotApiV2.Account`|
+|Deposit & Withdrawal|✓|`restClient.SpotApiV2.Account`|
+|Transfer|✓|`restClient.SpotApiV2.Account`|
+|Aam|✓|`restClient.SpotApiV2.Account`|
+
+### V2 Spot
+|API|Supported|Location|
+|--|--:|--|
+|Ticker rest|✓|`restClient.SpotApiV2.ExchangeData`|
+|Ticker websocket|✓|`socketClient.SpotApiV2`|
+|Orders rest|✓|`restClient.SpotApiV2.Trading`|
+|Orders websocket|✓|`socketClient.SpotApiV2`|
+|Executions rest|✓|`restClient.SpotApiV2.Trading`|
+|Executions websocket|✓|`socketClient.SpotApiV2`|
+
+### V2 Futures
+|API|Supported|Location|
+|--|--:|--|
+|Ticker rest|✓|`restClient.SpotApiV2.ExchangeData`|
+|Ticker websocket|✓|`socketClient.SpotApiV2`|
+|Orders rest|✓|`restClient.SpotApiV2.Trading`|
+|Orders websocket|✓|`socketClient.SpotApiV2`|
+|Executions rest|✓|`restClient.SpotApiV2.Trading`|
+|Executions websocket|✓|`socketClient.SpotApiV2`|
+|Position rest|✓|`restClient.SpotApiV2.Trading`|
+|Position websocket|✓|`socketClient.SpotApiV2`|
 
 ## Support the project
-I develop and maintain this package on my own for free in my spare time, any support is greatly appreciated.
-
-### Referral link
-Sign up using the following referral link to pay a small percentage of the trading fees you pay to support the project instead of paying them straight to CoinEx. This doesn't cost you a thing!
-[Link](https://www.coinex.com/register?refer_code=hd6gn)
+Any support is greatly appreciated.
 
 ### Donate
 Make a one time donation in a crypto currency of your choice. If you prefer to donate a currency not listed here please contact me.
 
-**Btc**:  bc1qz0jv0my7fc60rxeupr23e75x95qmlq6489n8gh  
-**Eth**:  0x8E21C4d955975cB645589745ac0c46ECA8FAE504   
+**Btc**:  bc1q277a5n54s2l2mzlu778ef7lpkwhjhyvghuv8qf  
+**Eth**:  0xcb1b63aCF9fef2755eBf4a0506250074496Ad5b7   
+**USDT (TRX)**  TKigKeJPXZYyMVDgMyXxMf17MWYia92Rjd
 
 ### Sponsor
 Alternatively, sponsor me on Github using [Github Sponsors](https://github.com/sponsors/JKorf). 
 
-## Discord
-A Discord server is available [here](https://discord.gg/MSpeEtSY8t). Feel free to join for discussion and/or questions around the CryptoExchange.Net and implementation libraries.
-
 ## Release notes
+* Version 7.9.0 - 06 Nov 2024
+    * Updated CryptoExchange.Net to version 8.2.0, see https://github.com/JKorf/CryptoExchange.Net/releases/tag/8.2.0
+
+* Version 7.8.0 - 28 Oct 2024
+    * Updated CryptoExchange.Net to version 8.1.0, see https://github.com/JKorf/CryptoExchange.Net/releases/tag/8.1.0
+    * Moved FormatSymbol to CoinExExchange class
+    * Added support Side setting on SharedTrade model
+    * Added CoinExTrackerFactory for creating trackers
+    * Added overload to Create method on CoinExOrderBookFactory support SharedSymbol parameter
+
+* Version 7.7.2 - 14 Oct 2024
+    * Updated CryptoExchange.Net to version 8.0.3, see https://github.com/JKorf/CryptoExchange.Net/releases/tag/8.0.3
+    * Fixed TypeLoadException during initialization
+
+* Version 7.7.1 - 14 Oct 2024
+    * Fixed Shared interface REST spot order quantity parsing
+    * Fixed Shared interface REST spot order status parsing
+
+* Version 7.7.0 - 27 Sep 2024
+    * Updated CryptoExchange.Net to version 8.0.0, see https://github.com/JKorf/CryptoExchange.Net/releases/tag/8.0.0
+    * Added Shared client interfaces implementation for Spot and Futures Rest and Socket clients
+    * Added memo parameter to SpotApi.Account.WithdrawAsync
+    * Added Role property to CoinExUserTrade model
+    * Updated Sourcelink package version
+    * Updated QuantityPrecision and PricePrecision property types from decimal to int on CoinExFuturesSymbol
+    * Fixed Quantity property type from long to decimal in CoinExDeposit model
+    * Fixed QuantityCredited property type from long to decimal? in CoinExDepositModel
+    * Fixed FuturesApi.SubscribeToTickerUpdatesAsync subscription
+    * Marked ISpotClient references as deprecated
+
+* Version 7.6.1 - 11 Sep 2024
+    * Added SpotApiV2.Account.GetTransactionHistoryAsync endpoint
+
+* Version 7.6.0 - 19 Aug 2024
+    * Added futures API batch endpoints:FuturesApi.Trading.PlaceMultipleOrdersAsync, PlaceMultipleStopOrdersAsync, CancelOrdersAsync and CancelStopOrdersAsync
+    * Added spot API batch endpoints: SpotApiV2.Trading.PlaceMultipleOrdersAsync, PlaceMultipleStopOrdersAsync, CancelOrdersAsync and CancelStopOrdersAsync
+    * Added stpMode paramaters to spot and futures PlaceOrderAsync and PlaceStopOrderAsync endpoints
+
+* Version 7.5.0 - 07 Aug 2024
+    * Updated CryptoExchange.Net to version 7.11.0, see https://github.com/JKorf/CryptoExchange.Net/releases/tag/7.11.0
+    * Updated XML code comments
+    * Added deprecation notice to V1 Spot API
+
+* Version 7.4.0 - 27 Jul 2024
+    * Updated CryptoExchange.Net to version 7.10.0, see https://github.com/JKorf/CryptoExchange.Net/releases/tag/7.10.0
+
+* Version 7.3.0 - 16 Jul 2024
+    * Updated CryptoExchange.Net to version 7.9.0, see https://github.com/JKorf/CryptoExchange.Net/releases/tag/7.9.0
+    * Updated internal classes to internal access modifier
+    * Added SpotApiV2.ExchangeData.GetAssetsAsync endpoint
+
+* Version 7.2.1 - 02 Jul 2024
+    * Updated CryptoExchange.Net to V7.8.0, see https://github.com/JKorf/CryptoExchange.Net/releases/tag/7.8.0
+    * Added FuturesApi.ExchangeData.GetPremiumIndexPriceHistoryAsync endpoint
+
+* Version 7.2.0 - 23 Jun 2024
+    * Updated CryptoExchange.Net to version 7.7.0, see https://github.com/JKorf/CryptoExchange.Net/releases/tag/7.7.0
+    * Updated response models from classes to records
+
+* Version 7.1.0 - 11 Jun 2024
+    * Updated CryptoExchange.Net to v7.6.0, see https://github.com/JKorf/CryptoExchange.Net?tab=readme-ov-file#release-notes for release notes
+
+* Version 7.0.5 - 07 May 2024
+    * Updated CryptoExchange.Net to v7.5.2, see https://github.com/JKorf/CryptoExchange.Net?tab=readme-ov-file#release-notes for release notes
+
+* Version 7.0.4 - 01 May 2024
+    * Updated CryptoExchange.Net to v7.5.0, see https://github.com/JKorf/CryptoExchange.Net?tab=readme-ov-file#release-notes for release notes
+
+* Version 7.0.3 - 28 Apr 2024
+    * Added CoinExExchange static info class
+    * Added CoinExOrderBookFactory book creation method
+    * Updated signature generation based on API docs update
+    * Fixed CoinExOrderBookFactory injection issue
+    * Updated CryptoExchange.Net to v7.4.0, see https://github.com/JKorf/CryptoExchange.Net?tab=readme-ov-file#release-notes for release notes
+
+* Version 7.0.2 - 23 Apr 2024
+    * Updated CryptoExchange.Net to 7.3.3, see https://github.com/JKorf/CryptoExchange.Net?tab=readme-ov-file#release-notes for release notes
+
+* Version 7.0.1 - 18 Apr 2024
+    * Updated CryptoExchange.Net to 7.3.1, see https://github.com/JKorf/CryptoExchange.Net?tab=readme-ov-file#release-notes for release notes
+
+* Version 7.0.0 - 06 Apr 2024
+    * Added V2 Spot API implementation
+    * Added Futures implementation
+
+* Version 6.2.2 - 03 Apr 2024
+    * Added parameter for SubscribeToOrderBookUpdatesAsync for full or dif updates
+    * Updated string comparision for improved performance
+    * Removed pre-send symbol validation
+
+* Version 6.2.1 - 24 Mar 2024
+	* Updated CryptoExchange.Net to 7.2.0, see https://github.com/JKorf/CryptoExchange.Net?tab=readme-ov-file#release-notes for release notes
+
+* Version 6.2.0 - 16 Mar 2024
+    * Updated CryptoExchange.Net to 7.1.0, see https://github.com/JKorf/CryptoExchange.Net?tab=readme-ov-file#release-notes for release notes
+	
+* Version 6.1.1 - 26 Feb 2024
+    * Fixed order subscription with symbol parameters
+
+* Version 6.1.0 - 25 Feb 2024
+    * Updated CryptoExchange.Net and implemented reworked websocket message handling. For release notes for the CryptoExchange.Net base library see: https://github.com/JKorf/CryptoExchange.Net?tab=readme-ov-file#release-notes
+    * Fixed issue in DI registration causing http client to not be correctly injected
+    * Made various parameters in CoinExSocketClient optional
+    * Removed redundant CoinExRestClient constructor overload
+    * Updated some namespaces
+
+* Version 6.0.6 - 03 Dec 2023
+    * Updated CryptoExchange.Net
+
 * Version 6.0.5 - 14 Nov 2023
     * Fix for broker reference
 

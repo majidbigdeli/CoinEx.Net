@@ -4,12 +4,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using CoinEx.Net.Clients;
 using CoinEx.Net.Interfaces.Clients;
-using CoinEx.Net.Objects;
-using CoinEx.Net.Objects.Models.Socket;
+using CoinEx.Net.Objects.Models.V2;
 using CoinEx.Net.Objects.Options;
 using CryptoExchange.Net.Objects;
+using CryptoExchange.Net.Objects.Sockets;
 using CryptoExchange.Net.OrderBook;
-using CryptoExchange.Net.Sockets;
 using Microsoft.Extensions.Logging;
 
 namespace CoinEx.Net.SymbolOrderBooks
@@ -42,15 +41,13 @@ namespace CoinEx.Net.SymbolOrderBooks
         /// <param name="socketClient">Socket client instance</param>
         public CoinExSpotSymbolOrderBook(string symbol,
             Action<CoinExOrderBookOptions>? optionsDelegate,
-            ILogger<CoinExSpotSymbolOrderBook>? logger,
-            ICoinExSocketClient? socketClient) : base(logger, "CoinEx", symbol)
+            ILoggerFactory? logger,
+            ICoinExSocketClient? socketClient) : base(logger, "CoinEx", "Spot", symbol)
         {
             var options = CoinExOrderBookOptions.Default.Copy();
             if (optionsDelegate != null)
                 optionsDelegate(options);
             Initialize(options);
-
-            symbol.ValidateCoinExSymbol();
 
             _strictLevels = false;
             _sequencesAreConsecutive = false;
@@ -64,7 +61,7 @@ namespace CoinEx.Net.SymbolOrderBooks
         /// <inheritdoc />
         protected override async Task<CallResult<UpdateSubscription>> DoStartAsync(CancellationToken ct)
         {
-            var result = await _socketClient.SpotApi.SubscribeToOrderBookUpdatesAsync(Symbol, Levels!.Value, 0, HandleUpdate).ConfigureAwait(false);
+            var result = await _socketClient.SpotApiV2.SubscribeToOrderBookUpdatesAsync(Symbol, Levels!.Value, null, true, HandleUpdate).ConfigureAwait(false);
             if (!result)
                 return result;
 
@@ -91,20 +88,10 @@ namespace CoinEx.Net.SymbolOrderBooks
         {
         }
 
-        private void HandleUpdate(DataEvent<CoinExSocketOrderBook> data)
+        private void HandleUpdate(DataEvent<CoinExOrderBook> data)
         {
-            if (data.Data.FullUpdate)
-            { 
-                SetInitialOrderBook(DateTime.UtcNow.Ticks, data.Data.Bids, data.Data.Asks);
-            }
-            else
-            {
-                UpdateOrderBook(DateTime.UtcNow.Ticks, data.Data.Bids, data.Data.Asks);
-            }
-            if (data.Data.Checksum != null)
-            {
-                AddChecksum((int)data.Data.Checksum.Value);
-            }
+            SetInitialOrderBook(DateTime.UtcNow.Ticks, data.Data.Data.Bids, data.Data.Data.Asks);
+            AddChecksum((int)data.Data.Data.Checksum);
         }
 
         /// <inheritdoc />
@@ -125,11 +112,11 @@ namespace CoinEx.Net.SymbolOrderBooks
             var result = checkHexCrc32 == (uint)checksum;
             if (!result)
             {
-                _logger.Log(LogLevel.Debug, $"{Id} order book {Symbol} failed checksum. Expected {checkHexCrc32}, received {checksum}");
+                _logger.Log(LogLevel.Debug, $"{Api} order book {Symbol} failed checksum. Expected {checkHexCrc32}, received {checksum}");
             }
             else
             {
-                _logger.Log(LogLevel.Trace, $"{Id} order book {Symbol} checksum OK.");
+                _logger.Log(LogLevel.Trace, $"{Api} order book {Symbol} checksum OK.");
             }
             return result;
         }

@@ -1,7 +1,6 @@
 ﻿using System;
 using CoinEx.Net.Converters;
 using CoinEx.Net.Enums;
-using CryptoExchange.Net.Converters;
 using Newtonsoft.Json;
 
 namespace CoinEx.Net.Objects.Models
@@ -9,7 +8,7 @@ namespace CoinEx.Net.Objects.Models
     /// <summary>
     /// Symbol trade info
     /// </summary>
-    public class CoinExSymbolTrade
+    public record CoinExSymbolTrade
     {
         /// <summary>
         /// The quantity of the transaction

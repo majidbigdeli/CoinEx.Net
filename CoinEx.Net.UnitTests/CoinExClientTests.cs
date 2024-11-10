@@ -16,94 +16,57 @@ using CoinEx.Net.Objects.Internal;
 using CryptoExchange.Net.Objects;
 using CryptoExchange.Net.Sockets;
 using CoinEx.Net.Clients;
-using CoinEx.Net.Clients.SpotApi;
+using CoinEx.Net.ExtensionMethods;
+using CryptoExchange.Net.Objects.Sockets;
+using NUnit.Framework.Legacy;
+using CoinEx.Net.Clients.SpotApiV1;
+using CryptoExchange.Net.Clients;
+using System.Net.Http;
+using CryptoExchange.Net.Converters.JsonNet;
 
 namespace CoinEx.Net.UnitTests
 {
     [TestFixture]
     public class CoinExClientTests
     {
-        //[Test]
-        //public async Task GetKlines_Should_RespondWithKlines()
-        //{
-        //    // arrange
-        //    CoinExKline[] expected = new CoinExKline[] {
-        //        new CoinExKline(),
-        //        new CoinExKline(),
-        //    };
-        //    var objects = TestHelpers.PrepareClient(() => Construct(), CreateRequest(expected));
 
-        //    // act
-        //    var result = await objects.Client.GetKlinesAsync("ETHBTC", KlineInterval.FiveMinute);
+        [TestCase()]
+        public async Task ReceivingError_Should_ReturnErrorAndNotSuccess()
+        {
+            // arrange
+            var client = TestHelpers.CreateClient();
+            var resultObj = new CoinExApiResult()
+            {
+                Code = 400001,
+                Message = "Error occured"
+            };
 
-        //    // assert
-        //    Assert.AreEqual(true, result.Success);
-        //    TestHelpers.PublicInstancePropertiesEqual(expected[0], result.Data.ToList()[0]);
-        //    TestHelpers.PublicInstancePropertiesEqual(expected[1], result.Data.ToList()[1]);
-        //}
+            TestHelpers.SetResponse((CoinExRestClient)client, JsonConvert.SerializeObject(resultObj));
 
-        //[Test]
-        //public async Task ReceivingCoinExError_Should_ReturnCoinExErrorAndNotSuccess()
-        //{
-        //    // arrange
-        //    var response = JsonConvert.SerializeObject(new CoinExApiResult<object>() { Code = 101, Data = new object(), Message = "Some error" });
-        //    var objects = TestHelpers.PrepareClient(() => Construct(), response);
+            // act
+            var result = await client.SpotApi.ExchangeData.GetAssetsAsync();
 
-        //    // act
-        //    var result = await objects.Client.GetSymbolsAsync();
+            // assert
+            ClassicAssert.IsFalse(result.Success);
+            ClassicAssert.IsNotNull(result.Error);
+            Assert.That(result.Error!.Code == 400001);
+            Assert.That(result.Error.Message == "Error occured");
+        }
 
-        //    // assert
-        //    Assert.IsFalse(result.Success);
-        //    Assert.IsNotNull(result.Error);
-        //    Assert.IsTrue(result.Error.ToString().Contains("Some error"));
-        //}
+        [TestCase()]
+        public async Task ReceivingHttpErrorWithNoJson_Should_ReturnErrorAndNotSuccess()
+        {
+            // arrange
+            var client = TestHelpers.CreateClient();
+            TestHelpers.SetResponse((CoinExRestClient)client, "", System.Net.HttpStatusCode.BadRequest);
 
-        //[Test]
-        //public async Task ReceivingHttpError_Should_ReturnErrorAndNotSuccess()
-        //{
-        //    // arrange
-        //    var objects = TestHelpers.PrepareClient(() => Construct(), "Error request", HttpStatusCode.BadRequest);
+            // act
+            var result = await client.SpotApi.ExchangeData.GetAssetsAsync();
 
-        //    // act
-        //    var result = await objects.Client.GetSymbolsAsync();
-
-        //    // assert
-        //    Assert.IsFalse(result.Success);
-        //    Assert.IsNotNull(result.Error);
-        //    Assert.IsTrue(result.Error.ToString().Contains("Error request"));
-        //}
-      
-        //[Test]
-        //public async Task AuthenticatedRequests_Should_HaveAuthenticationHeader()
-        //{
-        //    // arrange
-        //    var objects = TestHelpers.PrepareClient(() => Construct(new CoinExClientOptions()
-        //    {
-        //        ApiCredentials = new ApiCredentials("test", "test")
-        //    }), CreateRequest("{}"));
-
-        //    // act
-        //    var result = await objects.Client.GetBalancesAsync();
-
-        //    // assert
-        //    objects.Request.Verify(r => r.AddHeader("Authorization", It.IsAny<string>()));
-        //}
-
-        //[Test]
-        //public async Task PostRequests_Should_HaveContentBody()
-        //{
-        //    // arrange
-        //    var objects = TestHelpers.PrepareClient(() => Construct(new CoinExClientOptions()
-        //    {
-        //        ApiCredentials = new ApiCredentials("test", "test")
-        //    }), CreateRequest("{}"));
-
-        //    // act
-        //    var result = await objects.Client.PlaceOrderAsync("BTCETH", OrderType.Limit, OrderSide.Buy, 1, 1);
-
-        //    // assert
-        //    objects.Request.Verify(r => r.SetContent(It.IsAny<string>(), It.IsAny<string>()));
-        //}
+            // assert
+            ClassicAssert.IsFalse(result.Success);
+            ClassicAssert.IsNotNull(result.Error);
+        }
 
         [Test]
         public void ProvidingApiCredentials_Should_SaveApiCredentials()
@@ -113,7 +76,7 @@ namespace CoinEx.Net.UnitTests
             var authProvider = new CoinExAuthenticationProvider(new ApiCredentials("TestKey", "TestSecret"), null);
 
             // assert
-            Assert.AreEqual(authProvider.GetApiKey(), "TestKey");
+            Assert.That(authProvider.ApiKey == "TestKey");
         }
 
         [Test]
@@ -128,64 +91,74 @@ namespace CoinEx.Net.UnitTests
             var sign = authProvider.Sign(input);
 
             // assert
-            Assert.AreEqual(sign, output);
-        }
-
-        [TestCase("BTCUSDT", true)]
-        [TestCase("NANOUSDTA", true)]
-        [TestCase("NANOBTC", true)]
-        [TestCase("ETHBTC", true)]
-        [TestCase("BEETC", true)]
-        [TestCase("BETC", false)]
-        [TestCase("BTC-USDT", false)]
-        [TestCase("BTC-USD", false)]
-        public void CheckValidCoinExSymbol(string symbol, bool isValid)
-        {
-            if (isValid)
-                Assert.DoesNotThrow(symbol.ValidateCoinExSymbol);
-            else
-                Assert.Throws(typeof(ArgumentException), symbol.ValidateCoinExSymbol);
+            Assert.That(sign == output);
         }
 
         [Test]
-        public void CheckRestInterfaces()
+        public void CheckSignatureExample1()
         {
-            var assembly = Assembly.GetAssembly(typeof(CoinExRestClientSpotApi));
-            var ignore = new string[] { "ICoinExClientSpot" };
-            var clientInterfaces = assembly.GetTypes().Where(t => t.Name.StartsWith("ICoinExClient") && !ignore.Contains(t.Name));
+            var authProvider = new CoinExV2AuthenticationProvider(
+                new ApiCredentials("XXXXXXXXXX", "XXXXXXXXXX")
+                );
+            var client = (RestApiClient)new CoinExRestClient().SpotApiV2;
 
-            foreach (var clientInterface in clientInterfaces)
-            {
-                var implementation = assembly.GetTypes().Single(t => t.IsAssignableTo(clientInterface) && t != clientInterface);
-                int methods = 0;
-                foreach (var method in implementation.GetMethods().Where(m => m.ReturnType.IsAssignableTo(typeof(Task))))
+            CryptoExchange.Net.Testing.TestHelpers.CheckSignature(
+                client,
+                authProvider,
+                HttpMethod.Get,
+                "/v2/spot/pending-order",
+                (uriParams, bodyParams, headers) =>
                 {
-                    var interfaceMethod = clientInterface.GetMethod(method.Name, method.GetParameters().Select(p => p.ParameterType).ToArray());
-                    Assert.NotNull(interfaceMethod, $"Missing interface for method {method.Name} in {implementation.Name} implementing interface {clientInterface.Name}");
-                    methods++;
-                }
-                Debug.WriteLine($"{clientInterface.Name} {methods} methods validated");
-            }
+                    return headers["X-COINEX-SIGN"].ToString();
+                },
+                "444976F4F21D422AB7091B47D9201EB02A6614FF1F4C7B9F6CA57BFF632030A5",
+                new Dictionary<string, object>
+                {
+                    { "market", "BTCUSDT" },
+                    { "market_type", "SPOT" },
+                    { "side", "buy" },
+                    { "page", "1" },
+                    { "limit", "10" },
+                },
+                time: DateTimeConverter.ConvertFromMilliseconds(1700490703564),
+                disableOrdering: true);
         }
 
         [Test]
-        public void CheckSocketInterfaces()
+        public void CheckSignatureExample2()
         {
-            var assembly = Assembly.GetAssembly(typeof(CoinExSocketClient));
-            var clientInterfaces = assembly.GetTypes().Where(t => t.Name.StartsWith("ICoinExSocketClient"));
+            var authProvider = new CoinExV2AuthenticationProvider(
+                new ApiCredentials("XXXXXXXXXX", "XXXXXXXXXX")
+                );
+            var client = (RestApiClient)new CoinExRestClient().SpotApiV2;
 
-            foreach (var clientInterface in clientInterfaces)
-            {
-                var implementation = assembly.GetTypes().Single(t => t.IsAssignableTo(clientInterface) && t != clientInterface);
-                int methods = 0;
-                foreach (var method in implementation.GetMethods().Where(m => m.ReturnType.IsAssignableTo(typeof(Task<CallResult<UpdateSubscription>>))))
+            CryptoExchange.Net.Testing.TestHelpers.CheckSignature(
+                client,
+                authProvider,
+                HttpMethod.Post,
+                "/v2/spot/pending-order",
+                (uriParams, bodyParams, headers) =>
                 {
-                    var interfaceMethod = clientInterface.GetMethod(method.Name, method.GetParameters().Select(p => p.ParameterType).ToArray());
-                    Assert.NotNull(interfaceMethod, $"Missing interface for method {method.Name} in {implementation.Name} implementing interface {clientInterface.Name}");
-                    methods++;
-                }
-                Debug.WriteLine($"{clientInterface.Name} {methods} methods validated");
-            }
+                    return headers["X-COINEX-SIGN"].ToString();
+                },
+                "5128936CEDB75A512991A47BCCB0A78F6D9F6F540C07A17AE68D31F16E06A17F",
+                new Dictionary<string, object>
+                {
+                    { "market", "BTCUSDT" },
+                    { "market_type", "SPOT" },
+                    { "side", "buy" },
+                    { "page", "1" },
+                    { "limit", "10" },
+                },
+                time: DateTimeConverter.ConvertFromMilliseconds(1700490703564),
+                disableOrdering: true);
+        }
+
+        [Test]
+        public void CheckInterfaces()
+        {
+            CryptoExchange.Net.Testing.TestHelpers.CheckForMissingRestInterfaces<CoinExRestClient>();
+            CryptoExchange.Net.Testing.TestHelpers.CheckForMissingSocketInterfaces<CoinExSocketClient>();
         }
     }
 }

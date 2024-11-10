@@ -1,6 +1,5 @@
 ﻿using System;
 using CoinEx.Net.Converters;
-using CryptoExchange.Net.Converters;
 using Newtonsoft.Json;
 
 namespace CoinEx.Net.Objects.Models
@@ -8,7 +7,7 @@ namespace CoinEx.Net.Objects.Models
     /// <summary>
     /// Deposit info
     /// </summary>
-    public class CoinExDeposit
+    public record CoinExDeposit
     {
         /// <summary>
         /// The actual quantity of the deposit

@@ -1,7 +1,6 @@
 ﻿using System;
 using CoinEx.Net.Converters;
 using CoinEx.Net.Enums;
-using CryptoExchange.Net.Converters;
 using Newtonsoft.Json;
 
 namespace CoinEx.Net.Objects.Models
@@ -9,7 +8,7 @@ namespace CoinEx.Net.Objects.Models
     /// <summary>
     /// Withdrawal info
     /// </summary>
-    public class CoinExWithdrawal
+    public record CoinExWithdrawal
     {
         /// <summary>
         /// The actual quantity of the withdrawal, i.e. the quantity which will be transferred to the destination address

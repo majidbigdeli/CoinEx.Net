@@ -1,7 +1,6 @@
 ﻿using System;
 using CoinEx.Net.Converters;
 using CoinEx.Net.Enums;
-using CryptoExchange.Net.Converters;
 using Newtonsoft.Json;
 
 namespace CoinEx.Net.Objects.Models.Socket
@@ -9,7 +8,7 @@ namespace CoinEx.Net.Objects.Models.Socket
     /// <summary>
     /// Transaction data
     /// </summary>
-    public class CoinExSocketSymbolTrade
+    public record CoinExSocketSymbolTrade
     {
         /// <summary>
         /// The orde side
