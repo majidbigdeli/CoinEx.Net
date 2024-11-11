@@ -5,7 +5,7 @@
 		<Nullable>enable</Nullable>
 	</PropertyGroup>
 	<PropertyGroup>
-		<PackageId>SeptaPay.CoinEx.Net</PackageId>
+		<PackageId>Septa.CoinEx.Net</PackageId>
 		<Authors>majidbigdeli</Authors>
 		<PackageVersion>7.9.0</PackageVersion>
 		<AssemblyVersion>7.9.0</AssemblyVersion>
