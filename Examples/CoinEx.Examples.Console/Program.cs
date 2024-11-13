@@ -17,7 +17,7 @@ var logFactory = new LoggerFactory();
 logFactory.AddProvider(new TraceLoggerProvider());
 
 var socketClient = new CoinExSocketClient(logFactory);
-var subscription = await socketClient.SpotApiV2.SubscribeToTickerUpdatesAsync(new[] { "ETHUSDT" }, update =>
+var subscription = await socketClient.SpotApiV2.SubscribeToOrderBookUpdatesAsync(new[] { "ETHUSDT" }, update =>
 {
     Console.WriteLine($"Websocket client ticker price for ETHUSDT: {update.Data.First().LastPrice}");
 });

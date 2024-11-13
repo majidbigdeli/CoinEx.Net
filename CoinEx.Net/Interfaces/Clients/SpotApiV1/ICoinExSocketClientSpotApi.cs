@@ -108,7 +108,7 @@ namespace CoinEx.Net.Interfaces.Clients.SpotApiV1
         /// <param name="symbol">The symbol to get the data for</param>
         /// <param name="interval">The interval of the candles</param>
         /// <returns></returns>
-        Task<CallResult<IEnumerable<CoinExKline>>> GetKlinesAsync(string symbol, KlineInterval interval);
+        Task<CallResult<IEnumerable<CoinExKline>>> GetKlinesAsync(string symbol, KlineInterval interval, DateTime startDate, DateTime endDate);
 
         /// <summary>
         /// Get balances of assets. Requires API credentials
